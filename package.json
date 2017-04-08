@@ -13,7 +13,8 @@
     "start": "grunt server",
     "build": "grunt build:debug",
     "test": "grunt test:ci",
-    "postinstall": "bower install"
+    "postinstall": "bower install --force",
+    "dist": "grunt dist"
   },
   "repository": {
     "type": "git",
@@ -48,19 +49,21 @@
     "originate": "~0.1.5",
     "loom": "~3.1.2",
     "connect-livereload": "~0.3.1",
-    "grunt-contrib-sass": "~0.7.2",
     "grunt-es6-import-validate": "0.0.6",
     "grunt-contrib-uglify": "~0.7.0",
+    "grunt-sass": "^2.0.0",
+    "node-sass": "^4.5.2",
+    "dotenv": "^2.0.0",
     "grunt-usemin": "~3.0.0"
   },
   "dependencies": {
-    "gapitoken": "~0.1.0",
-    "request": "~2.33.0",
-    "mime": "~1.2.11",
-    "wrench": "~1.5.6",
     "async": "~0.2.10",
+    "connect-header": "0.0.5",
+    "gapitoken": "~0.1.0",
     "grunt-exec": "~0.4.5",
+    "mime": "~1.2.11",
     "proxy-middleware": "~0.5.0",
-    "connect-header": "0.0.5"
+    "request": "~2.33.0",
+    "wrench": "~1.5.6"
   }
 }

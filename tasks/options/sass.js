@@ -1,15 +1,10 @@
+var vendorPaths = ['vendor/bourbon/dist', 'vendor/neat/app/assets/stylesheets', 'vendor/wyrm/sass', 'vendor/font-awesome/scss'];
+
 module.exports = {
   compile: {
+    files: { 'tmp/result/assets/app.css': 'app/styles/app.sass' },
     options: {
-      style: 'expanded',
-      loadPath: ['vendor/bourbon/dist', 'vendor/neat/app/assets/stylesheets', 'vendor/wyrm/sass', 'vendor/font-awesome/scss']
+      includePaths: vendorPaths,
     },
-    files: [{
-      expand: true,
-      cwd: 'app/styles',
-      src: ['**/*.{scss,sass}', '!**/_*.{scss,sass}'],
-      dest: 'tmp/result/assets/',
-      ext: '.css'
-    }]
-  }
+  },
 };
