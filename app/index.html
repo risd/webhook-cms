@@ -6,11 +6,26 @@
   <title>Webhook</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="siteName" content="test" />
+  <meta name="siteName" content="<!--  @echo SITE_NAME  -->" />
   <meta name="buildLive" content="false" />
   <meta name="keepReload" content="true" />
   <meta name="suppressAlert" content="true" />
   <link rel="icon" href="/assets/images/favicon.png">
+
+
+  <script>window.ENV = {}</script>
+  <!-- @ifdef FIREBASE -->
+  <script>window.ENV.dbName = "<!-- @echo FIREBASE -->";</script>
+  <!-- @endif -->
+  <!-- @ifdef SERVER -->
+  <script>window.ENV.uploadUrl = "<!-- @echo SERVER -->";</script>
+  <!-- @endif -->
+  <!-- @ifdef EMBEDLY_KEY -->
+  <script>window.ENV.embedlyKey = "<!-- @echo EMBEDLY_KEY -->";</script>
+  <!-- @endif -->
+  <!-- @ifdef SELF_HOSTED -->
+  <script>window.ENV.selfHosted = <!-- @echo SELF_HOSTED -->;</script>
+  <!-- @endif -->
 
 
   <!-- build:css(tmp/result) /assets/app.min.css -->

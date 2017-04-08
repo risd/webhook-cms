@@ -1,3 +1,5 @@
+require( 'dotenv' ).config();
+
 module.exports = function(grunt) {
   // To support Coffeescript, SASS, LESS and others, just install
   // the appropriate grunt package and it will be automatically included
@@ -73,8 +75,6 @@ module.exports = function(grunt) {
   grunt.loadTasks('tasks'); // Loads tasks in `tasks/` folder
 
   config.env = process.env;
-
-
 
 
   // App Kit's Main Tasks

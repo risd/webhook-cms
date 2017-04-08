@@ -31,6 +31,19 @@ Steps to install:
 * Look for `<meta name="siteName" content="test" />` in `app/index.html` and change `test` to your site name. You can always `wh create` a new trial site if you want to work with scratch data.
 * Run `grunt server`, which loads on localhost:8000. It will activate livereload on changes to your JS, Handlebar and Sass files.
 
+If working on a CMS for a self-hosted environment, use a [`.env`](http://github.com/motdotla/dotenv.git) file with the following values:
+
+```
+SITE_NAME=
+FIREBASE=
+SERVER=
+EMBEDLY_KEY=
+SELF_HOSTED= 
+```
+
+Ensure a Google Cloud Storage key is placed can be found at `.cloudstorage.key` in to push to production.
+
+
 ## Widgets in the form builder
 
 Webhook uses a form builder to construct the various data entry forms users will use in the CMS. We call the different fields the Formbuilder allows "widgets".
