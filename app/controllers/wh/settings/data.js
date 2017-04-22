@@ -1,5 +1,13 @@
 import SearchIndex from 'appkit/utils/search-index';
 
+function uniqueId() {
+  return Date.now() + 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+
+
 export default Ember.Controller.extend({
 
   needs: ['application'],
@@ -275,6 +283,32 @@ export default Ember.Controller.extend({
         var blob = new window.Blob([data], { type: "text/plain;charset=utf-8" });
         window.saveAs(blob, backup.fileName);
       });
-    }
+    },
+
+    reindex: function () {
+      var dataController = this;
+
+      dataController.send('notify', 'info', 'Reindex signal sent.', { icon: 'ok-sign' });
+
+      var indexData = {
+        userid: dataController.get('session.user.email'),
+        sitename: dataController.get('session.site.name'),
+        id: uniqueId(),
+      };
+      
+      return new Ember.RSVP.Promise(function (resolve, reject) {
+
+        window.ENV.firebaseRoot
+          .child( 'management/commands/siteSearchReindex/' + indexData.sitename )
+          .set( indexData, function ( error ) {
+            if ( error ) return reject( error );
+
+            Ember.Logger.log( "SearchIndex::reindexing::%@".fmt( indexData.id ) );
+            resolve( indexData );
+          });
+
+      });
+      
+    },
   }
 });

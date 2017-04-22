@@ -227,6 +227,9 @@ export default {
   },
 
   reindex: function () {
+    // This has been deprecated in favor of pushing a
+    // redinex signal to the firebase. action found in
+    // app/controllers/wh/settings/data.js
     return this.indexSite();
   },
 

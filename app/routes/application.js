@@ -674,6 +674,13 @@ export default Ember.Route.extend({
             }
             buildEnv.set('building', false);
           }
+          else if ( message.code === 'SITE_INDEX' ) {
+            if ( message.status === 0 ) {
+              route.send('notify', 'success', 'Site reindex complete', { icon: 'refresh' });
+            } else {
+              route.send('notify', 'danger', 'Site reindex failed', { icon: 'remove' });
+            }
+          }
         }
       });
 

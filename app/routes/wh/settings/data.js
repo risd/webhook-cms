@@ -50,8 +50,10 @@ export default Ember.Route.extend({
   },
 
   actions: {
-    reindex: function () {
-      this.transitionTo('reindex');
-    }
+    // reindex: function () {
+    //   // controller.send('notify', 'info', 'Reindex signal sent.', { icon: 'ok-sign' });
+    //   // controller.send('notify', 'success', 'Site reindexed!');
+    //   this.transitionTo('reindex');
+    // }
   }
 });
