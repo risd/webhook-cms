@@ -31,17 +31,26 @@ Steps to install:
 * Look for `<meta name="siteName" content="test" />` in `app/index.html` and change `test` to your site name. You can always `wh create` a new trial site if you want to work with scratch data.
 * Run `grunt server`, which loads on localhost:8000. It will activate livereload on changes to your JS, Handlebar and Sass files.
 
-If working on a CMS for a self-hosted environment, use a [`.env`](http://github.com/motdotla/dotenv.git) file with the following values:
+If working on a CMS for a self-hosted environment, use a [`.env`][dotenv] file at the root of this project with the following values:
 
 ```
 SITE_NAME=
 FIREBASE=
 SERVER=
 EMBEDLY_KEY=
-SELF_HOSTED= 
+SELF_HOSTED=
 ```
 
-Ensure a Google Cloud Storage key is placed can be found at `.cloudstorage.key` in to push to production.
+Include the following keys to your [`.env`][dotenv] file in order to push to production.
+
+```
+GOOGLE_CLOUD_PROJECT_ID=
+GOOGLE_SERVICE_ACCOUNT=
+GOOGLE_KEY_FILE=
+ASSET_BUCKET=
+ASSET_DIRECTORY=
+CMS_VERSION=
+```
 
 
 ## Widgets in the form builder
@@ -80,3 +89,4 @@ Helpers are located in `app/helpers`.
 [3]: http://www.firebase.com
 [4]: http://www.webhook.com/docs/importing-custom-data/
 [5]: https://github.com/webhook/webhook-generate
+[dotenv]:http://github.com/motdotla/dotenv.git

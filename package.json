@@ -1,9 +1,9 @@
 {
-  "name": "app-kit",
+  "name": "webhook-cms",
   "namespace": "appkit",
   "APIMethod": "stub",
   "proxyURL": "http://localhost:8000",
-  "version": "0.0.0",
+  "version": "2.1.0",
   "private": true,
   "directories": {
     "doc": "doc",
@@ -14,7 +14,9 @@
     "build": "grunt build:debug",
     "test": "grunt test:ci",
     "postinstall": "bower install --force",
-    "dist": "grunt dist"
+    "dist": "grunt dist",
+    "push-production": "grunt push-prod",
+    "dist-push": "npm run dist && npm run push-production"
   },
   "repository": {
     "type": "git",

@@ -1,14 +1,15 @@
+require( 'dotenv' ).config()
+
 module.exports = function(grunt) {
   var wrench = require('wrench');
   var cloudStorage = require('../libs/cloudStorage.js');
   var fs = require('fs');
   var async = require('async');
-  var request = require('request');
 
 
-  var productionBucket = 'cms.webhook.com';
-  var productionVersion = 'v2';
-  var distDir = 'dist/assets/';
+  var productionBucket = process.env.ASSET_BUCKET || 'cms.webhook.com';
+  var productionVersion = process.env.CMS_VERSION || 'v2';
+  var distDir = process.env.ASSET_DIRECTORY || 'dist/assets/';
 
   grunt.registerTask('push-prod', function() {
     var done = this.async();
@@ -65,20 +66,6 @@ module.exports = function(grunt) {
 
     async.series(uploadFunctions, function() {
       grunt.log.success('Done');
-
-      request.post('https://api.hipchat.com/v1/rooms/message',
-        {
-          form: {
-            auth_token: 'da7c90e4dc307a5c4e8a5d277391e2',
-            room_id: 'webhook',
-            from: 'WH-Notifier',
-            message: 'A new version of the CMS has been deployed. (' + productionVersion + ')',
-            color: 'green'
-          }
-        }, function(err ,data, body) {
-          done();
-        }
-      );
     });
   });
 

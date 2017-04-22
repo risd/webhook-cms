@@ -1,18 +1,21 @@
 'use strict';
+require( 'dotenv' ).config();
 var request = require('request');
 var GAPI = require('gapitoken');
 var mime = require('mime');
 var fs   = require('fs');
 
 var oauthToken = '';
-var projectName = 'king-of-webhook';
+var projectName = process.env.GOOGLE_CLOUD_PROJECT_ID || 'king-of-webhook';
+var googleServiceAccount = process.env.GOOGLE_SERVICE_ACCOUNT || '188556106710-md8pj4tchbc9hvppdvvj9fn3786apnc5@developer.gserviceaccount.com';
+var keyFile = process.env.GOOGLE_KEY_FILE || '.cloudstorage.key'
 
 
 var refreshToken = function(callback) {
   var gapi = new GAPI({
-      iss: '188556106710-md8pj4tchbc9hvppdvvj9fn3786apnc5@developer.gserviceaccount.com',
+      iss: googleServiceAccount,
       scope: 'https://www.googleapis.com/auth/devstorage.full_control https://www.googleapis.com/auth/siteverification',
-      keyFile: '.cloudstorage.key'
+      keyFile: keyFile,
   }, function(err) {
      if (err) { console.log(err); process.exit(1); }
 
