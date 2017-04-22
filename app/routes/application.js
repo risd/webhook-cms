@@ -45,7 +45,9 @@ export default Ember.Route.extend({
     });
 
     if (window.ENV.uploadUrl.indexOf('http://') !== 0) {
-      window.ENV.uploadUrl = 'http://' + window.ENV.uploadUrl;
+      if (window.ENV.uploadUrl.indexOf('https://') !== 0 ) {
+        window.ENV.uploadUrl = 'http://' + window.ENV.uploadUrl; 
+      }
     }
 
     if (window.ENV.uploadUrl.substr(-1) !== '/') {
