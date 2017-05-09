@@ -11,6 +11,7 @@ var taskRequirements = {
   sass: [['grunt-sass', 'grunt-contrib-sass']],
   less: ['grunt-contrib-less'],
   stylus: ['grunt-contrib-stylus'],
+  embedFonts: ['grunt-embed-fonts'],
   emberTemplates: ['grunt-ember-templates'],
   emblem: ['grunt-emblem'],
   emberscript: ['grunt-ember-script'],

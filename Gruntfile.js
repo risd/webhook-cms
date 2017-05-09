@@ -167,6 +167,7 @@ module.exports = function(grunt) {
   _.merge(config, {
     concurrent: {
       buildDist: [
+        ["copy:assemble"],
         "buildTemplates:dist",
         "buildScripts",
         "buildStyles",
@@ -175,6 +176,7 @@ module.exports = function(grunt) {
         "buildIndexHTML:dist"
       ],
       buildDebug: [
+        ["copy:assemble"],
         "buildTemplates:debug",
         "buildScripts",
         "buildStyles",
@@ -215,6 +217,7 @@ module.exports = function(grunt) {
                      'sass:compile',
                      'less:compile',
                      'stylus:compile',
+                     'embedFonts:inline',
                      'copy:cssToResult',
                      'autoprefixer:app'
                      ]));
