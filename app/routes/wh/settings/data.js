@@ -1,8 +1,14 @@
 export default Ember.Route.extend({
+  
+  baseUrl: ( window.ENV.uploadUrl.substr(-1) === '/' )
+    ? window.ENV.uploadUrl
+    : window.ENV.uploadUrl + '/',
+
   model: function () {
 
     var siteName = this.get('session.site.name');
     var siteToken = this.get('session.site.token');
+    var baseUrl = this.baseUrl;
 
     return new Ember.RSVP.Promise(function (resolve, reject) {
       var backupsRef = window.ENV.firebaseRoot.child('management/backups');
@@ -11,7 +17,7 @@ export default Ember.Route.extend({
         var backups = Ember.$.map(snapshot.val() || [], function (timestamp) {
           return {
             fileName: siteName + '-' + moment(timestamp).format() + '.json',
-            url: window.ENV.uploadUrl + 'backup-snapshot/?site=' + siteName + '&token=' + siteToken + '&timestamp=' + timestamp,
+            url: baseUrl + 'backup-snapshot/?site=' + siteName + '&token=' + siteToken + '&timestamp=' + timestamp,
             timestamp: timestamp
           };
         });
@@ -22,13 +28,15 @@ export default Ember.Route.extend({
   },
 
   setupController: function (controller) {
+    var baseUrl = this.baseUrl;
+
     controller.set('deleteOption', 'data');
     controller.set('wordpressFile', null);
 
     // controller.set('dataBackup', null);
     controller.set('dataError', null);
 
-    controller.set('downloadLink', window.ENV.uploadUrl + 'download/?site=' +this.get('session.site.name') + '&token=' + this.get('session.site.token'));
+    controller.set('downloadLink', baseUrl + 'download/?site=' +this.get('session.site.name') + '&token=' + this.get('session.site.token'));
     controller.set('downloadFileName', this.get('session.site.name'));
 
     window.ENV.firebaseRoot.child('management/sites').child(this.get('session.site.name')).child('api-key').once('value', function(snap) {

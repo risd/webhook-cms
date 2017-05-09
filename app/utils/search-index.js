@@ -1,5 +1,7 @@
 export default {
-  baseUrl: window.ENV.uploadUrl + 'search/',
+  baseUrl: ( window.ENV.uploadUrl.substr(-1) === '/' )
+    ? window.ENV.uploadUrl +  'search/'
+    : window.ENV.uploadUrl + '/search/',
 
   search: function (query, page, typeName) {
 
@@ -13,7 +15,7 @@ export default {
 
     return new Ember.RSVP.Promise(function (resolve, reject) {
       Ember.$.ajax({
-        url: window.ENV.uploadUrl + 'search/',
+        url: SearchIndex.baseUrl,
         type: 'POST',
         data: Ember.$.extend(SearchIndex.siteAndToken(), {
           query: query,
