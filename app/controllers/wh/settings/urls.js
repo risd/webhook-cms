@@ -87,6 +87,7 @@ export default Ember.ArrayController.extend({
               if (error) {
                 reject(error);
               } else {
+                controller.send('buildSignal');
                 resolve();
               }
             });
