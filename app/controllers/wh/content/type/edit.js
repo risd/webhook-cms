@@ -396,7 +396,7 @@ export default Ember.ObjectController.extend({
 
       this.set('initialValues', controls.getEach('value'));
 
-      controller.send('buildSignal', itemData.publish_date);
+      controller.send('buildSignal', itemData.publish_date, { contentType: this.get( 'type.id' ), itemKey: item.id } );
 
       var sendNotify = function (message) {
         controller.send('notify', 'info', message, { icon: 'ok-sign' });

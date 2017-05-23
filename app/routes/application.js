@@ -743,7 +743,10 @@ export default Ember.Route.extend({
       window.App.reset();
     },
 
-    buildSignal: function (publishDate) {
+    buildSignal: function (publishDate, options) {
+      if ( !options ) options = {};
+      console.log( 'build-signal-options:' + JSON.stringify( options ) )
+
       Ember.Logger.info('Sending build signal:%@'.fmt(publishDate || 'No publish date.'));
 
       var route = this;
@@ -761,6 +764,9 @@ export default Ember.Route.extend({
         if (publishDate) {
           data.build_time = publishDate;
         }
+
+        if (options.contentType) data.contentType = options.contentType;
+        if (options.itemKey) data.itemKey = options.itemKey;
 
         window.ENV.firebase.root().child('management/commands/build/' + route.get('session.site.name')).set(data);
         route.set('buildEnvironment.building', true);
