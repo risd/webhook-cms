@@ -768,6 +768,7 @@ export default Ember.Route.extend({
         if (options.contentType) data.contentType = options.contentType;
         if (options.itemKey) data.itemKey = options.itemKey;
 
+        window.ENV.firebase.root().child('management/commands/previewBuild/' + route.get('session.site.name')).set(data);
         window.ENV.firebase.root().child('management/commands/build/' + route.get('session.site.name')).set(data);
         route.set('buildEnvironment.building', true);
 
