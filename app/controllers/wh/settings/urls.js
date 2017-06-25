@@ -87,7 +87,6 @@ export default Ember.ArrayController.extend({
               if (error) {
                 reject(error);
               } else {
-                controller.send('buildSignal');
                 resolve();
               }
             });
@@ -102,37 +101,31 @@ export default Ember.ArrayController.extend({
 
       Ember.RSVP.Promise.all([redirectUpdates, redirectRemovals]).then(function () {
 
-        if (controller.get('domain')) {
-          // only send signal if domain is set
-          return new Ember.RSVP.Promise(function (resolve, reject) {
+        return new Ember.RSVP.Promise(function (resolve, reject) {
 
-            // Should probably put this somewhere. :)
-            function uniqueId() {
-              return Date.now() + 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
-                return v.toString(16);
-              });
-            }
-
-            var id = uniqueId();
-
-
-            window.ENV.firebaseRoot.child("management/sites/" + siteName + "/dns-status/id").set(id, function() {
-              window.ENV.firebaseRoot.child("management/commands/dns/" + controller.get('session.site.name')).set({
-                dnsname: controller.get('domain'),
-                id: id
-              }, function(error) {
-                if (error) {
-                  reject(error);
-                } else {
-                  resolve(['Redirect rules saved.', 'Worker signaled.']);
-                }
-              });
+          // Should probably put this somewhere. :)
+          function uniqueId() {
+            return Date.now() + 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+              var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+              return v.toString(16);
             });
+          }
+
+          var id = uniqueId();
+
+
+          window.ENV.firebaseRoot.child("management/commands/redirects/" + controller.get('session.site.name')).set({
+            userid: controller.get('session.user.email'),
+            sitename: controller.get('session.site.name'),
+            id: id,
+          }, function(error) {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(['Redirect rules saved.', 'Worker signaled.']);
+            }
           });
-        } else {
-          return Ember.RSVP.Promise.resolve(['Redirect rules saved.']);
-        }
+        });
 
       }).then(function (messages) {
 
