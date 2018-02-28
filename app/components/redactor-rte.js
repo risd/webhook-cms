@@ -66,7 +66,7 @@ export default Ember.Component.extend({
       }
     });
 
-    var redactorOptions = {};
+    var redactorOptions = window.WebhookRedactorOptions || {};
 
     if (this.get('options.javascript') === false) {
       redactorOptions.deniedTags = ['script'];
