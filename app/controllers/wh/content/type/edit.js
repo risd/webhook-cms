@@ -407,7 +407,6 @@ export default Ember.ObjectController.extend({
       var buildSignalOptions = {
         contentType: contentType,
         itemKey: item.id,
-        isNew: this.get('isNew'),
       };
 
       controller.send('buildSignal', itemData.publish_date, buildSignalOptions );
@@ -461,7 +460,7 @@ export default Ember.ObjectController.extend({
       if ( eventMessageAction ) {
         var fieldMessage = ( updatedFieldList.length === 0 )
           ? [ '' ]
-          : updatedFieldList.length === 1
+          : ( updatedFieldList.length === 1 )
             ? [ 'the field', updatedFieldList.map( addQuotes ).join( ',' ), 'of' ]
             : [ 'the fields', updatedFieldList.map( addQuotes ).join( ',' ), 'of' ]
         if ( this.get( 'type.oneOff' ) ) {
