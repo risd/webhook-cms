@@ -382,47 +382,69 @@ export default Ember.ObjectController.extend({
   },
 
   commitItem: function () {
+    var user = this.get( 'session.user.email' )
 
     var controller = this;
 
     var itemModel = this.get('itemModel');
 
+    
     var controls = this.get('type.controls');
     var itemData = dataFromControls(controls);
 
     itemData.isDraft = this.getWithDefault('isDraft', null);
+    
+    var updatedFieldList = updatedFields.call( this );
+
 
     return itemModel.set('itemData', itemData).save().then(function (item) {
 
       this.set('initialValues', controls.getEach('value'));
 
-      controller.send('buildSignal', itemData.publish_date, { contentType: this.get( 'type.id' ), itemKey: item.id } );
+      var contentType = this.get( 'type.id' );
+      var itemName = itemData.name;
+
+      var buildSignalOptions = {
+        contentType: contentType,
+        itemKey: item.id,
+        isNew: this.get('isNew'),
+      };
+
+      controller.send('buildSignal', itemData.publish_date, buildSignalOptions );
 
       var sendNotify = function (message) {
         controller.send('notify', 'info', message, { icon: 'ok-sign' });
       };
+      var eventLogEntry = function ( message ) {
+        controller.send( 'eventLog', { code: 'EDIT', message: message } )
+      }
 
       // One Off
       if (this.get('type.oneOff')) {
+        var eventMessageAction = 'edited';
         sendNotify('Saved. Initiating build.');
       }
 
       // Draft
       else if (itemData.isDraft) {
+        var eventMessageAction = 'saved a draft of';
         sendNotify('Draft saved.');
       }
 
       // Live
       else if (itemData.publish_date && moment(itemData.publish_date).isBefore()) {
-        sendNotify('Saved, initiating build.');
+        var eventMessageAction = 'edited';
+        sendNotify('Saved. Initiating build.');
       }
 
       // Future
       else {
+        var eventMessageAction = 'staged an edit in';
         sendNotify('Saved, will go live later.');
       }
 
       if (this.get('isNew')) {
+        var eventMessageAction = 'created';
 
         this.transitionToRoute('wh.content.type.edit', itemModel.get('id'));
 
@@ -436,7 +458,42 @@ export default Ember.ObjectController.extend({
 
       }
 
+      if ( eventMessageAction ) {
+        var fieldMessage = ( updatedFieldList.length === 0 )
+          ? [ '' ]
+          : updatedFieldList.length === 1
+            ? [ 'the field', updatedFieldList.map( addQuotes ).join( ',' ), 'of' ]
+            : [ 'the fields', updatedFieldList.map( addQuotes ).join( ',' ), 'of' ]
+        if ( this.get( 'type.oneOff' ) ) {
+          var eventMessage = [ user, eventMessageAction ].concat( fieldMessage, [ "\"" + contentType + "\"." ] ).join( ' ' )
+        }
+        else {
+          var eventMessage  = [ user, eventMessageAction ].concat( fieldMessage, [ "\"" + itemName + "\"", "in", "\"" + contentType + "\"." ] ).join( ' ' )
+        }
+        eventLogEntry( eventMessage )
+      };
+
     }.bind(this));
+
+    function updatedFields () {
+      var updated = [];
+    
+      this.get( 'controls' ).forEach( function ( control, index ) {
+        var label = control.get( 'label' )
+        var value = control.get( 'value' )
+        var initialValue = this.get('initialValues').objectAt(index);
+
+        if ( label === 'Last Updated' ) return;
+
+        if ((value !== "" || initialValue !== undefined) && (value !== initialValue)) {
+          updated.push( label );
+        }
+      }.bind( this ) );
+
+      return updated;
+    }
+
+    function addQuotes ( str ) { return "\"" + str + "\"" }
 
   },
 

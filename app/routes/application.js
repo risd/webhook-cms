@@ -668,7 +668,7 @@ export default Ember.Route.extend({
         var id = snap.key();
 
         if(!initialIds[id]) {
-          if(message.code === 'BUILD') {
+          if(message.code === 'BUILT') {
             if(message.status === 0) {
               route.send('notify', 'success', 'Site build complete', { icon: 'refresh' });
             } else {
@@ -741,6 +741,45 @@ export default Ember.Route.extend({
 
       Ember.Logger.log('Resetting app.');
       window.App.reset();
+    },
+
+    /**
+     * Publishes site messages that will appear on the `build history` log of the CMS index
+     * 
+     * @param  {object} options
+     * @param  {string} options.code     The type of message that is coming through
+     * @param  {string} options.message  The message to post on the event log
+     */
+    eventLog: function ( options ) {
+      var siteName = this.get( 'session.site.name' );
+      var timestamp = Date.now();
+
+      var logEntry = Object.assign( { timestamp: timestamp }, options );
+
+      var logRef = window.ENV.firebase.root().child( '/management/sites' ).child( siteName ).child( 'messages' );
+
+      // push log entry
+      logRef.push( logEntry, function onComplete () {
+        pruneList( 50 );
+      } );
+
+      // checks the logRef length & keeps it below the maxLength
+      function pruneList ( maxLength ) {
+        logRef.once( 'value', function ( logSnapshot ) {
+          var logLength;
+          try {
+            logLength = Object.keys( logSnapshot.val() ).length;
+          } catch( error ) {
+            logLength = 0;
+          }
+
+          if ( logLength > maxLength ) {
+            logRef.limitToFirst( 1 ).once( 'child_added', function ( snap ) {
+              snap.ref().remove();
+            } );
+          }
+        } );
+      }
     },
 
     buildSignal: function (publishDate, options) {
