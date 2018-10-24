@@ -11,7 +11,7 @@ export default Ember.Route.extend({
       errors   : Ember.A([]),
     });
 
-    window.ENV.firebaseRoot.child("management/sites/" + siteName + "/dns").once('value', function(snapshot) {
+    window.ENV.firebaseRoot.ref("management/sites/" + siteName + "/dns").once('value', function(snapshot) {
       controller.set('domain', snapshot.val() || '');
     });
 

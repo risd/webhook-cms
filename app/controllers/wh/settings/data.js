@@ -202,7 +202,7 @@ export default Ember.Controller.extend({
       }
 
       this.set('isRefreshingApi', true);
-      window.ENV.firebaseRoot.child('management/sites').child(this.get('session.site.name')).child('api-key').set(newKey, function(err) {
+      window.ENV.firebaseRoot.ref('management/sites').child(this.get('session.site.name')).child('api-key').set(newKey, function(err) {
         this.set('apiKey', newKey);
         this.set('isRefreshingApi', false);
       }.bind(this));

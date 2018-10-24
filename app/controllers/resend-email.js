@@ -22,7 +22,7 @@ export default Ember.ObjectController.extend({
       }
 
       var escapedEmail = this.get('email').toLowerCase().replace(/\./g, ',1');
-      var root = window.ENV.firebaseRoot.child('management/commands/verification/' + escapedEmail);
+      var root = window.ENV.firebaseRoot.ref('management/commands/verification/' + escapedEmail);
 
       root.set({ userid: this.get('email').toLowerCase(), siteref: window.location.host, id: uniqueId() }, function(err) {
 

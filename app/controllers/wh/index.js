@@ -18,14 +18,14 @@ export default Ember.Controller.extend({
   init: function () {
     // the ref to management/sites/<sitename> should probably be stored somewhere
     var siteName = Ember.$('meta[name="siteName"]').attr('content');
-    this.set('messageRef', window.ENV.firebaseRoot.child('/management/sites/' + siteName + '/messages'));
+    this.set('messageRef', window.ENV.firebaseRoot.ref('/management/sites/' + siteName + '/messages'));
 
     var messagePage = this.get('messageRef').limitToLast(this.get('serverMessagesPerPage'));
 
     var controller = this;
 
     messagePage.on('child_added', function (snapshot) {
-      var message = Ember.$.extend({}, snapshot.val(), { id: snapshot.key() });
+      var message = Ember.$.extend({}, snapshot.val(), { id: snapshot.key });
 
       // We want to see if the website has ever been deployed
       if (typeof message.status !== 'undefined' && message.status === 0) {

@@ -42,7 +42,7 @@ export default Ember.ObjectController.extend({
       this.set('isSending', true);
 
       var verifyUser = function(user, key, callback) {
-        var root = window.ENV.firebaseRoot.child('management/users/' + user.email.toLowerCase().replace(/\./g, ',1') + '/verification');
+        var root = window.ENV.firebaseRoot.ref('management/users/' + user.email.toLowerCase().replace(/\./g, ',1') + '/verification');
 
         root.child('verified').once('value', function(snapshot) {
           var val = snapshot.val();
