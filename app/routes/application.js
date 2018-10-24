@@ -347,53 +347,41 @@ export default Ember.Route.extend({
 
     return new Ember.RSVP.Promise(function (resolve, reject) {
 
-      var firebaseAuth = new FirebaseSimpleLogin(window.ENV.firebaseRoot, function (error, user) {
-
-        if (route.get('isDestroyed')) {
-          return;
-        }
-
-        if (user) {
-          if(window.Raygun) {
-            window.Raygun.setUser(user.email, false, user.email);
-            window.trackingInfo.user = user.email;
-          }
-          window.trackingInfo.loggedIn = true;
-          // Logged in
-          route.validateUser(user).then(route.initializeUser.bind(route), function (error) {
-            session.set('user', null);
-            session.set('site.token', null);
-            session.set('error', error);
-          }).then(route.getTeam.bind(route), function (error) {
-            session.set('user', null);
-            session.set('site.token', null);
-            session.set('error', error);
-          }).then(resolve, function (error) {
-            session.set('user', null);
-            session.set('site.token', null);
-            session.set('error', error);
-          });
-        } else if (error) {
-          // an error occurred while attempting login
-          session.set('user', null);
-          session.set('site.token', null);
-          session.set('error', {
-            code: "Invalid Login",
-            message: "The email and password you entered don't match."
-          });
-          reject(error);
-        } else {
-          window.trackingInfo.loggedIn = false;
-          // user is logged out
-          session.set('user', null);
-          session.set('site.token', null);
-          resolve();
-        }
-
-      });
-
+      var firebaseAuth = firebase.auth();
       session.set('auth', firebaseAuth);
+      var user = firebaseAuth.currentUser;
 
+      if (route.get('isDestroyed')) {
+        return;
+      }
+
+      if (user) {
+        if(window.Raygun) {
+          window.Raygun.setUser(user.email, false, user.email);
+          window.trackingInfo.user = user.email;
+        }
+        window.trackingInfo.loggedIn = true;
+        // Logged in
+        route.validateUser(user).then(route.initializeUser.bind(route), function (error) {
+          session.set('user', null);
+          session.set('site.token', null);
+          session.set('error', error);
+        }).then(route.getTeam.bind(route), function (error) {
+          session.set('user', null);
+          session.set('site.token', null);
+          session.set('error', error);
+        }).then(resolve, function (error) {
+          session.set('user', null);
+          session.set('site.token', null);
+          session.set('error', error);
+        });
+      } else {
+        window.trackingInfo.loggedIn = false;
+        // user is logged out
+        session.set('user', null);
+        session.set('site.token', null);
+        resolve();
+      }
     });
   },
 
