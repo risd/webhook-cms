@@ -185,7 +185,7 @@ export default Ember.ArrayController.extend({
 
           // removed self, log out.
           if (controller.get('session.user.email') === email) {
-            controller.get('session.auth.auth').logout();
+            controller.get('session.auth').signOut();
           }
 
           // Update your user list
