@@ -14,8 +14,13 @@
 
 
   <script>window.ENV = {}</script>
-  <!-- @ifdef FIREBASE -->
-  <script>window.ENV.dbName = "<!-- @echo FIREBASE -->";</script>
+  <!-- @ifdef FIREBASE_NAME -->
+  <script>window.ENV.dbConfig = {
+    projectId: "<!-- @echo FIREBASE_NAME -->",
+    apiKey: "<!-- @echo FIREBASE_WEB_API_KEY -->",
+    authDomain: "<!-- @echo FIREBASE_NAME -->.firebaseapp.com",
+    databaseURL: "https://<!-- @echo FIREBASE_NAME -->.firebaseio.com",
+  };</script>
   <!-- @endif -->
   <!-- @ifdef SERVER -->
   <script>window.ENV.uploadUrl = "<!-- @echo SERVER -->";</script>
@@ -77,8 +82,9 @@
     <script src="/vendor/ember-load-initializers/ember-load-initializers.js"></script>
     <script src="/vendor/ic-ajax/main.js"></script>
 
-    <script src="/vendor/firebase/firebase.js"></script>
-    <script src='/vendor/firebase-simple-login/firebase-simple-login.js'></script>
+    <script src="/node_modules/firebase/firebase-app.js"></script>
+    <script src="/node_modules/firebase/firebase-auth.js"></script>
+    <script src="/node_modules/firebase/firebase-database.js"></script>
     <script src="/node_modules/emberfire/dist/emberfire.js"></script>
 
     <script src="/assets/javascript/codemirror-compressed.js"></script>

@@ -13,7 +13,10 @@ var App = Ember.Application.extend({
   modulePrefix            : 'appkit', // TODO: loaded via config
   Resolver                : Resolver['default'],
   init: function () {
-    window.ENV.firebaseRoot = new Firebase("https://" + window.ENV.dbName + ".firebaseio.com/");
+    // project::firebase::initialize::todo
+    var firebaseConfig = window.ENV.dbConfig;
+    firebase.initializeApp( firebaseConfig )
+    window.ENV.firebaseRoot = firebase.database();
     this._super.apply(this, arguments);
   }
 });
