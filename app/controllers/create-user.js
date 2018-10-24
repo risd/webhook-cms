@@ -41,8 +41,8 @@ export default Ember.ObjectController.extend({
 
       this.set('isSending', true);
 
-      var verifyUser = function(user, key, callback) {
-        var root = window.ENV.firebaseRoot.ref('management/users/' + user.email.toLowerCase().replace(/\./g, ',1') + '/verification');
+      var verifyUser = function(userEmail, key, callback) {
+        var root = window.ENV.firebaseRoot.ref('management/users/' + userEmail.toLowerCase().replace(/\./g, ',1') + '/verification');
 
         root.child('verified').once('value', function(snapshot) {
           var val = snapshot.val();
@@ -62,7 +62,11 @@ export default Ember.ObjectController.extend({
         });
       };
 
-      this.get('session.auth').createUser(this.get('email'), this.get('password'), function (error, user) {
+      var userEmail = this.get('email');
+      var userPassword = this.get('password');
+      var sessionAuth = this.get('session.auth');
+
+      sessionAuth.createUserWithEmailAndPassword(userEmail, userPassword, function (error, user) {
         if (!error) {
           this.set('success', 'Signed up!');
         } else {
@@ -71,40 +75,23 @@ export default Ember.ObjectController.extend({
         }
 
         // Mark the user as existing, queue up confirmation email
-        var token = user.token;
         var fireRoot = window.ENV.firebaseRoot;
-        fireRoot.authWithCustomToken(token, function() {
 
-          fireRoot.child('management/users/' + user.email.toLowerCase().replace(/\./g, ',1') + '/exists').set(true, function(err) {
-            if(!window.ENV.selfHosted) {
+        fireRoot.ref('management/users/' + userEmail.toLowerCase().replace(/\./g, ',1') + '/exists').set(true, function(err) {
+          if(!window.ENV.selfHosted) {
 
-              verifyUser(user, this.get('verification_key'), function(err) {
-                fireRoot.unauth();
-                this.set('isSending', false);
-                if(err) {
-                  this.set('error', err);
-                  return;
-                }
-
-                this.get('session.auth').login('password', {
-                  email     : this.get('email'),
-                  password  : this.get('password'),
-                  rememberMe: true
-                });
-
-              }.bind(this));
-
-            } else {
-              fireRoot.unauth();
+            verifyUser(userEmail, this.get('verification_key'), function(err) {
               this.set('isSending', false);
+              if(err) {
+                this.set('error', err);
+                return;
+              }
 
-              this.get('session.auth').login('password', {
-                email     : this.get('email'),
-                password  : this.get('password'),
-                rememberMe: true
-              });
-            }
-          }.bind(this));
+            }.bind(this));
+
+          } else {
+            this.set('isSending', false);
+          }
         }.bind(this));
 
       }.bind(this));
