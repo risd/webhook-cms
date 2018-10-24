@@ -1,4 +1,4 @@
-/*global hljs*/
+/*global hljs, firebase*/
 import Resolver from 'ember/resolver';
 import loadInitializers from 'ember/load-initializers';
 
@@ -15,7 +15,7 @@ var App = Ember.Application.extend({
   init: function () {
     // project::firebase::initialize::todo
     var firebaseConfig = window.ENV.dbConfig;
-    firebase.initializeApp( firebaseConfig )
+    firebase.initializeApp( firebaseConfig );
     window.ENV.firebaseRoot = firebase.database();
     this._super.apply(this, arguments);
   }
