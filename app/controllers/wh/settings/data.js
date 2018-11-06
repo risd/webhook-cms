@@ -299,7 +299,7 @@ export default Ember.Controller.extend({
       return new Ember.RSVP.Promise(function (resolve, reject) {
 
         window.ENV.firebaseRoot
-          .child( 'management/commands/siteSearchReindex/' + indexData.sitename )
+          .ref( 'management/commands/siteSearchReindex/' + indexData.sitename )
           .set( indexData, function ( error ) {
             if ( error ) return reject( error );
 
