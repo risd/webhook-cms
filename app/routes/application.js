@@ -213,6 +213,7 @@ export default Ember.Route.extend({
         .then( getToken )
         .catch( function (error) {
           if (error.code === 'PERMISSION_DENIED') {
+            console.log( '' )
             var escapedEmail = user.email.toLowerCase().replace(/\./g, ',1');
             // Try to add to user list, if this is allowed they were a potential user
             managementSiteRef.child('users').child(escapedEmail).set(user.email.toLowerCase(), function (error) {
@@ -335,7 +336,7 @@ export default Ember.Route.extend({
 
     return Ember.RSVP.Promise.all([ownerCheck, activeCheck, statusCheck, endTrialCheck]).then(function () {
       Ember.Logger.log('ApplicationRoute::initializeUser::✓');
-      session.set('user', user);
+      route.set('session.user', user);;
     });
 
   },
@@ -358,19 +359,6 @@ export default Ember.Route.extend({
 
     return new Ember.RSVP.Promise(function (resolve, reject) {
       Ember.Logger.log('ApplicationRoute::getSession::promise');
-
-      // Closure that handles firebase authe with email & password
-      var firebaseEmailPasswordAuth = function ( email, password ) {
-
-        if ( bailIfDestroyed() ) return;
-
-        var user = firebase.auth().currentUser;
-        if ( user ) return successfullySignedIn( user );
-
-        firebase.auth().signInWithEmailAndPassword( email, password )
-          .then( successfullySignedIn )
-          .catch( notSignedIn );
-      };
 
       var firebaseAuth = {
         signInWithEmailAndPassword: firebaseEmailPasswordAuth,
@@ -434,6 +422,18 @@ export default Ember.Route.extend({
           Ember.Logger.log('ApplicationRoute::getSession::destroyed');
           return true;
         }
+      }
+
+      // Closure that handles firebase authe with email & password
+      function firebaseEmailPasswordAuth ( email, password ) {
+
+        if ( bailIfDestroyed() ) return;
+        var user = firebaseAuth.currentUser()
+        if ( user ) return successfullySignedIn( user );
+
+        firebase.auth().signInWithEmailAndPassword( email, password )
+          .then( successfullySignedIn )
+          .catch( notSignedIn );
       }
 
       function currentUser () { return firebase.auth().currentUser }
