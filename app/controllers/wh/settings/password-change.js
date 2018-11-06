@@ -77,25 +77,23 @@ export default Ember.ObjectController.extend({
 
       var self = this;
       // Ensure existing password is correct
-      sessionAuth.currentUser.reauthenticateAndRetrieveDataWithCredential( oldPassword, function ( error ) {
-        if (error) return self.set('errors', Ember.A([error]));
-
-        // Update password
-        sessionAuth.currentUser.updatePassword( newPassword, function ( error ) {
-          self.set('isLoading', false);
-
-          if (error) {
-            self.set('errors', Ember.A([error]));
-          } else {
-            self.set('success', {
-              message: 'Password successfully changed'
-            });
-            self.set('oldPassword', '');
-            self.set('newPassword', '');
-            self.set('newPassword2', '');
-          }
+      sessionAuth.reAuthWithPassword( oldPassword )
+        .then( function updatePassword ( user ) {
+          return sessionAuth.currentUser().updatePassword( newPassword )
         } )
-      } )
+        .then( function successSet () {
+          self.set( 'isLoading', false );
+          self.set('success', {
+            message: 'Password successfully changed'
+          });
+          self.set('oldPassword', '');
+          self.set('newPassword', '');
+          self.set('newPassword2', '');
+        } )
+        .catch( function errorSet ( error ) {
+          self.set( 'isLoading', false );
+          self.set( 'errors', Ember.A( [ error ] ) );
+        } )
     }
   }
 });
