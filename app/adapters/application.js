@@ -1,6 +1,6 @@
 export default DS.FirebaseAdapter.extend({
   firebase: window.ENV.firebase,
-
+  
   init: function () {
     this._super.apply(this, arguments);
     this._findQueryMapForType = {};
