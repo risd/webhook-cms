@@ -13,8 +13,8 @@ var App = Ember.Application.extend({
   modulePrefix            : 'appkit', // TODO: loaded via config
   Resolver                : Resolver['default'],
   init: function () {
-    // project::firebase::initialize::todo
     var firebaseConfig = window.ENV.dbConfig;
+    firebase.database.enableLogging( JSON.parse( window.localStorage.getItem( 'debug-firebase' ) ) || false );
     firebase.initializeApp( firebaseConfig );
     window.ENV.firebaseRoot = firebase.database();
     this._super.apply(this, arguments);
