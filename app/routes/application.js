@@ -1,3 +1,5 @@
+/*global firebase*/
+
 import Group from 'appkit/models/group';
 import User from 'appkit/models/user';
 
@@ -172,7 +174,7 @@ export default Ember.Route.extend({
   },
 
   // Confirm that user has completed validation steps
-  validateUser: function (user) {
+  validateUser: function () {
 
     Ember.Logger.log('ApplicationRoute::validateUser');
 
@@ -185,11 +187,18 @@ export default Ember.Route.extend({
 
     return new Ember.RSVP.Promise(function (resolve, reject) {
 
+      var user = firebase.auth().currentUser;
+
       var getToken = function (snapshot) {
         var token = snapshot.val();
         session.set('site.token', token);
 
+        Ember.Logger.log('ApplicationRoute::get-token');
+
         window.ENV.firebase = window.ENV.firebaseRoot.ref('buckets/' + siteName + '/' + token + '/dev');
+
+        Ember.Logger.log('window.ENV.firebase');
+        Ember.Logger.log(window.ENV.firebase);
 
         // if you just logged in, we have to set the firebase property
         DS.FirebaseAdapter.reopen({
@@ -197,40 +206,39 @@ export default Ember.Route.extend({
         });
 
         Ember.Logger.log('ApplicationRoute::validateUser::✓');
-
         resolve(user);
       };
 
-      managementSiteRef.child('key').once('value', getToken, function (error) {
-
-        if (error.code === 'PERMISSION_DENIED') {
-          var escapedEmail = user.email.toLowerCase().replace(/\./g, ',1');
-          // Try to add to user list, if this is allowed they were a potential user
-          managementSiteRef.child('users').child(escapedEmail).set(user.email.toLowerCase(), function (error) {
-            if (error) {
-              reject(error);
-              return;
-            }
-            managementSiteRef.root.child('management/users').child(escapedEmail).child('sites/user').child(siteName).set(true, function (error) {
+      managementSiteRef.child('key').once( 'value' )
+        .then( getToken )
+        .catch( function (error) {
+          if (error.code === 'PERMISSION_DENIED') {
+            var escapedEmail = user.email.toLowerCase().replace(/\./g, ',1');
+            // Try to add to user list, if this is allowed they were a potential user
+            managementSiteRef.child('users').child(escapedEmail).set(user.email.toLowerCase(), function (error) {
               if (error) {
                 reject(error);
                 return;
               }
-              // Try to delete self from potential user list
-              managementSiteRef.child('potential_users').child(escapedEmail).remove(function (error) {
+              managementSiteRef.root.child('management/users').child(escapedEmail).child('sites/user').child(siteName).set(true, function (error) {
                 if (error) {
                   reject(error);
                   return;
                 }
-                // Redo original authorization call
-                managementSiteRef.child('key').once('value', getToken, reject);
+                // Try to delete self from potential user list
+                managementSiteRef.child('potential_users').child(escapedEmail).remove(function (error) {
+                  if (error) {
+                    reject(error);
+                    return;
+                  }
+                  // Redo original authorization call
+                  managementSiteRef.child('key').once('value', getToken, reject);
+                });
               });
             });
-          });
-        } else {
-          reject(error);
-        }
-
+          } else {
+            reject(error);
+          }
       });
 
     });
@@ -240,6 +248,7 @@ export default Ember.Route.extend({
   initializeUser: function (user) {
 
     Ember.Logger.log('ApplicationRoute::initializeUser');
+    Ember.Logger.log(user);
 
     var route = this;
     var session = route.get('session');
@@ -251,13 +260,12 @@ export default Ember.Route.extend({
       this.setupMessageListener();
     }
 
-    user.email = user.email.toLowerCase();
-
     Ember.Logger.info('Logged in as ' + user.email);
 
     var escapedEmail = user.email.toLowerCase().replace(/\./g, ',1');
 
     var ownerCheck = new Ember.RSVP.Promise(function (resolve, reject) {
+      Ember.Logger.log('ApplicationRoute::initializeUser::ownerCheck');
       session.set('isOwner', false);
       managementSiteRef.once('value', function (snapshot) {
         var siteData = snapshot.val();
@@ -296,6 +304,7 @@ export default Ember.Route.extend({
     var billingRef = window.ENV.firebaseRoot.ref('billing/sites/' + siteName);
 
     var activeCheck = new Ember.RSVP.Promise(function (resolve, reject) {
+      Ember.Logger.log('ApplicationRoute::initializeUser::activeCheck');
       billingRef.child('active').once('value', function (snapshot) {
         session.set('billing.active', snapshot.val());
         Ember.run(null, resolve);
@@ -303,6 +312,7 @@ export default Ember.Route.extend({
     });
 
     var statusCheck = new Ember.RSVP.Promise(function (resolve, reject) {
+      Ember.Logger.log('ApplicationRoute::initializeUser::statusCheck');
       billingRef.child('status').once('value', function (snapshot) {
         session.set('billing.status', snapshot.val());
         Ember.run(null, resolve);
@@ -310,6 +320,7 @@ export default Ember.Route.extend({
     });
 
     var endTrialCheck = new Ember.RSVP.Promise(function (resolve, reject) {
+      Ember.Logger.log('ApplicationRoute::initializeUser::endTrialCheck');
       billingRef.child('endTrial').once('value', function (snapshot) {
         var endTrial = snapshot.val();
         if (endTrial) {
@@ -346,41 +357,100 @@ export default Ember.Route.extend({
     var managementSiteRef = window.ENV.firebaseRoot.ref('management/sites/' + siteName);
 
     return new Ember.RSVP.Promise(function (resolve, reject) {
+      Ember.Logger.log('ApplicationRoute::getSession::promise');
 
-      var firebaseAuth = firebase.auth();
+      // Closure that handles firebase authe with email & password
+      var firebaseEmailPasswordAuth = function ( email, password ) {
+
+        if ( bailIfDestroyed() ) return;
+
+        var user = firebase.auth().currentUser;
+        if ( user ) return successfullySignedIn( user );
+
+        firebase.auth().signInWithEmailAndPassword( email, password )
+          .then( successfullySignedIn )
+          .catch( notSignedIn );
+      };
+
+      var firebaseAuth = {
+        signInWithEmailAndPassword: firebaseEmailPasswordAuth,
+        currentUser: currentUser,
+        signOut: signOut,
+        reAuthWithPassword: reAuthWithPassword,
+        createUserWithEmailAndPassword: createUserWithEmailAndPassword,
+        sendPasswordResetEmail: sendPasswordResetEmail,
+      };
       session.set('auth', firebaseAuth);
-      var user = firebaseAuth.currentUser;
 
-      if (route.get('isDestroyed')) {
-        return;
+      // triggers as Firebase first initializes the auth state.
+      firebase.auth().onAuthStateChanged( initializedUser )
+
+      function initializedUser ( user ) {
+        firebase.auth().onAuthStateChanged( function noop () {} )
+        if ( user ) return successfullySignedIn( user )
+        else notSignedIn( user )
       }
 
-      if (user) {
+      function successfullySignedIn ( user ) {
+        if ( bailIfDestroyed() ) return;
+        Ember.Logger.log('LoginController::signInWithEmailAndPassword::user');
         if(window.Raygun) {
           window.Raygun.setUser(user.email, false, user.email);
           window.trackingInfo.user = user.email;
         }
         window.trackingInfo.loggedIn = true;
         // Logged in
-        route.validateUser(user).then(route.initializeUser.bind(route), function (error) {
-          session.set('user', null);
-          session.set('site.token', null);
-          session.set('error', error);
-        }).then(route.getTeam.bind(route), function (error) {
-          session.set('user', null);
-          session.set('site.token', null);
-          session.set('error', error);
-        }).then(resolve, function (error) {
-          session.set('user', null);
-          session.set('site.token', null);
-          session.set('error', error);
-        });
-      } else {
+        route.validateUser()
+          .then(route.initializeUser.bind(route), notSignedIn)
+          .then(route.getTeam.bind(route), notSignedIn)
+          .then(resolve, notSignedIn);
+      }
+
+      function notSignedIn ( error ) {
+        if ( bailIfDestroyed() ) return;
         window.trackingInfo.loggedIn = false;
         // user is logged out
         session.set('user', null);
         session.set('site.token', null);
-        resolve();
+        if ( error && error.code && error.message ) {
+          session.set('error', error);
+          return reject( error );
+        }
+        else if ( error ) {
+          var errorDuringAuth = {
+            code: 'Authentication Error',
+            message: 'Could not authenticate user.',
+          };
+          session.set( 'error', errorDuringAuth );
+          return reject( errorDuringAuth );
+        }
+        else {
+          return resolve();
+        }
+      }
+
+      function bailIfDestroyed () {
+        if (route.get('isDestroyed')) {
+          Ember.Logger.log('ApplicationRoute::getSession::destroyed');
+          return true;
+        }
+      }
+
+      function currentUser () { return firebase.auth().currentUser }
+      function signOut () { return firebase.auth().signOut() }
+      function createUserWithEmailAndPassword ( email, password, cb ) {
+        return firebase.auth().createUserWithEmailAndPassword( email, password, cb )
+      }
+
+      function reAuthWithPassword ( password ) {
+        var email = firebaseAuth.currentUser().email;
+        return firebase.auth().signInWithEmailAndPassword( email, password )
+      }
+
+      function sendPasswordResetEmail ( email ) {
+        var redirectTo = encodeURIComponent( [ 'https://', siteName.replace( /,1/g, '.' ), '/cms' ].join('') )
+        var continuationUrl = [ 'https://redirect.risd.systems/index.html?to=', redirectTo ].join( '' )
+        return firebase.auth().sendPasswordResetEmail( email, { url: continuationUrl } );
       }
     });
   },
@@ -772,7 +842,6 @@ export default Ember.Route.extend({
 
     buildSignal: function (publishDate, options) {
       if ( !options ) options = {};
-      console.log( 'build-signal-options:' + JSON.stringify( options ) )
 
       Ember.Logger.info('Sending build signal:%@'.fmt(publishDate || 'No publish date.'));
 
