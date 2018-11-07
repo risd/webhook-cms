@@ -438,8 +438,8 @@ export default Ember.Route.extend({
 
       function currentUser () { return firebase.auth().currentUser }
       function signOut () { return firebase.auth().signOut() }
-      function createUserWithEmailAndPassword ( email, password, cb ) {
-        return firebase.auth().createUserWithEmailAndPassword( email, password, cb )
+      function createUserWithEmailAndPassword ( email, password ) {
+        return firebase.auth().createUserWithEmailAndPassword( email, password )
       }
 
       function reAuthWithPassword ( password ) {

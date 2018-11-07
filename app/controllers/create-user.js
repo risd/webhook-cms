@@ -66,18 +66,15 @@ export default Ember.ObjectController.extend({
       var userPassword = this.get('password');
       var sessionAuth = this.get('session.auth');
 
-      sessionAuth.createUserWithEmailAndPassword(userEmail, userPassword, function (error, user) {
-        if (!error) {
-          this.set('success', 'Signed up!');
-        } else {
-          this.set('error', error);
-          return;
-        }
+      sessionAuth.createUserWithEmailAndPassword(userEmail, userPassword )
+        .then( createdUser.bind( this ) )
+        .catch( errorCreatingUser.bind( this ) )
+
+      function createdUser ( user ) {
+        this.set('success', 'Signed up!');
 
         // Mark the user as existing, queue up confirmation email
-        var fireRoot = window.ENV.firebaseRoot;
-
-        fireRoot.ref('management/users/' + userEmail.toLowerCase().replace(/\./g, ',1') + '/exists').set(true, function(err) {
+        window.ENV.firebaseRoot.ref('management/users/' + userEmail.toLowerCase().replace(/\./g, ',1') + '/exists').set(true, function(err) {
           if(!window.ENV.selfHosted) {
 
             verifyUser(userEmail, this.get('verification_key'), function(err) {
@@ -93,8 +90,11 @@ export default Ember.ObjectController.extend({
             this.set('isSending', false);
           }
         }.bind(this));
+      }
 
-      }.bind(this));
+      function errorCreatingUser ( error ) {
+        this.set('error', error);
+      }
     }
   }
 });
