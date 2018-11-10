@@ -1,9 +1,9 @@
 {
-  "name": "webhook-cms",
+  "name": "@risd/webhook-cms",
   "namespace": "appkit",
   "APIMethod": "stub",
   "proxyURL": "http://localhost:8000",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "private": true,
   "directories": {
     "doc": "doc",
