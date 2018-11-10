@@ -213,7 +213,6 @@ export default Ember.Route.extend({
         .then( getToken )
         .catch( function (error) {
           if (error.code === 'PERMISSION_DENIED') {
-            console.log( '' )
             var escapedEmail = user.email.toLowerCase().replace(/\./g, ',1');
             // Try to add to user list, if this is allowed they were a potential user
             managementSiteRef.child('users').child(escapedEmail).set(user.email.toLowerCase(), function (error) {
@@ -336,7 +335,7 @@ export default Ember.Route.extend({
 
     return Ember.RSVP.Promise.all([ownerCheck, activeCheck, statusCheck, endTrialCheck]).then(function () {
       Ember.Logger.log('ApplicationRoute::initializeUser::✓');
-      route.set('session.user', user);;
+      route.set('session.user', user);
     });
 
   },
