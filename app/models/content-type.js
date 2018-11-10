@@ -109,7 +109,7 @@ export default DS.Model.extend({
     this.get('team.groups').forEach(function (group) {
       var groupKey = group.get('key');
       window.ENV.firebaseRoot
-      .child('management/sites')
+      .ref('management/sites')
       .child(siteName)
       .child('groups')
       .child(groupKey)
@@ -128,7 +128,7 @@ export default DS.Model.extend({
     this.get('team.groups').forEach(function (group) {
       var groupKey = group.get('key');
       window.ENV.firebaseRoot
-      .child('management/sites')
+      .ref('management/sites')
       .child(siteName)
       .child('groups')
       .child(groupKey)

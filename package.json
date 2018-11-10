@@ -1,9 +1,9 @@
 {
-  "name": "webhook-cms",
+  "name": "@risd/webhook-cms",
   "namespace": "appkit",
   "APIMethod": "stub",
   "proxyURL": "http://localhost:8000",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "private": true,
   "directories": {
     "doc": "doc",
@@ -61,8 +61,10 @@
     "url-resolve": "^1.0.0"
   },
   "dependencies": {
+    "@risd/emberfire": "^1.4.1",
     "async": "~0.2.10",
     "connect-header": "0.0.5",
+    "firebase": "^5.5.7",
     "gapitoken": "~0.1.0",
     "grunt-exec": "~0.4.5",
     "grunt-sass": "^2.1.0",

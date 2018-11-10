@@ -15,11 +15,16 @@ export default Ember.ObjectController.extend({
       this.set('success', false);
       this.set('error', null);
 
-      this.get('session.auth').sendPasswordResetEmail(this.get('email'), function () {
-        this.set('success', true);
-        this.set('isSending', false);
-      }.bind(this));
-
+      this.get('session.auth').sendPasswordResetEmail( this.get( 'email' ) )
+        .then( function () {
+          this.set('success', true);
+          this.set('isSending', false);
+        }.bind( this ) )
+        .catch( function ( error ) {
+          this.set('success', false);
+          this.set('isSending', false);
+          this.set('error', error);
+        }.bind( this ) );
     }
   }
 });

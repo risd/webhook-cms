@@ -19,7 +19,7 @@ export default Ember.Route.extend({
         }
       });
     } else {
-      var root = window.ENV.firebaseRoot.child('management/users/' + username + '/verification');
+      var root = window.ENV.firebaseRoot.ref('management/users/' + username + '/verification');
 
       root.child('verified').once('value', function(snapshot) {
         var val = snapshot.val();

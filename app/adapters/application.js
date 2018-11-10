@@ -1,6 +1,6 @@
 export default DS.FirebaseAdapter.extend({
   firebase: window.ENV.firebase,
-
+  
   init: function () {
     this._super.apply(this, arguments);
     this._findQueryMapForType = {};
@@ -115,9 +115,9 @@ export default DS.FirebaseAdapter.extend({
 
     ref.on('child_removed', function(snapshot) {
       if (!valueEventTriggered) { return; }
-      snapshot.ref().once('value', function (snapshot) {
+      snapshot.ref.once('value', function (snapshot) {
         if (snapshot.val() === null) {
-          var record = store.getById(type, snapshot.key());
+          var record = store.getById(type, snapshot.key);
           if (record && !record.get('isDeleted')) {
             adapter._enqueue(function() {
               store.deleteRecord(record);

@@ -50,11 +50,7 @@ export default Ember.Controller.extend({
       this.get('session').set('error', null);
       this.set('isLoading', true);
 
-      this.get('session.auth').login('password', {
-        email     : this.get('email'),
-        password  : this.get('password'),
-        rememberMe: true
-      });
+      this.get('session.auth').signInWithEmailAndPassword(this.get('email'), this.get('password'));
     }
   }
 });
