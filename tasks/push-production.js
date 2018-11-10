@@ -9,6 +9,7 @@ module.exports = function(grunt) {
 
   var productionBucket = process.env.ASSET_BUCKET || 'cms.webhook.com';
   var productionVersion = process.env.CMS_VERSION || 'v2';
+  var cmsAssetsDirectory = `cms/${ productionVersion }/assets`;
   var distDir = process.env.ASSET_DIRECTORY || 'dist/assets/';
 
   grunt.registerTask('push-prod', function() {
@@ -42,7 +43,7 @@ module.exports = function(grunt) {
         if(file.indexOf('.vendor.min.js') !== -1) {
           uploadFunctions.push(function(step) {
             grunt.log.success('uploading ' + source);
-            cloudStorage.objects.upload(productionBucket, source, productionVersion + '/assets/vendor.min.js', function(error) {
+            cloudStorage.objects.upload(productionBucket, source, cmsAssetsDirectory + '/vendor.min.js', function(error) {
               if ( error ) grunt.log.error( error )
               step();
             });
@@ -50,7 +51,7 @@ module.exports = function(grunt) {
         } else if (file.indexOf('.app.min.css') !== -1) {
           uploadFunctions.push(function(step) {
             grunt.log.success('uploading ' + source);
-            cloudStorage.objects.upload(productionBucket, source, productionVersion + '/assets/app.min.css', function(error) {
+            cloudStorage.objects.upload(productionBucket, source, cmsAssetsDirectory + '/app.min.css', function(error) {
               if ( error ) grunt.log.error( error )
               step();
             });
@@ -58,7 +59,7 @@ module.exports = function(grunt) {
         } else {
           uploadFunctions.push(function(step) {
             grunt.log.success('uploading ' + source);
-            cloudStorage.objects.upload(productionBucket, source, productionVersion + '/assets/' + file, function(error) {
+            cloudStorage.objects.upload(productionBucket, source, cmsAssetsDirectory + '/' + file, function(error) {
               if ( error ) grunt.log.error( error )
               step();
             });
