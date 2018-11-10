@@ -4,7 +4,6 @@
   "APIMethod": "stub",
   "proxyURL": "http://localhost:8000",
   "version": "3.0.0",
-  "private": true,
   "directories": {
     "doc": "doc",
     "test": "test"
