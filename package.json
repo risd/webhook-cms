@@ -61,6 +61,7 @@
     "url-resolve": "^1.0.0"
   },
   "dependencies": {
+    "@risd/emberfire": "^1.4.1",
     "async": "~0.2.10",
     "connect-header": "0.0.5",
     "firebase": "^5.5.7",
