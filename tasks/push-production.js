@@ -42,21 +42,24 @@ module.exports = function(grunt) {
         if(file.indexOf('.vendor.min.js') !== -1) {
           uploadFunctions.push(function(step) {
             grunt.log.success('uploading ' + source);
-            cloudStorage.objects.upload(productionBucket, source, productionVersion + '/assets/vendor.min.js', function() {
+            cloudStorage.objects.upload(productionBucket, source, productionVersion + '/assets/vendor.min.js', function(error) {
+              if ( error ) grunt.log.error( error )
               step();
             });
           });
         } else if (file.indexOf('.app.min.css') !== -1) {
           uploadFunctions.push(function(step) {
             grunt.log.success('uploading ' + source);
-            cloudStorage.objects.upload(productionBucket, source, productionVersion + '/assets/app.min.css', function() {
+            cloudStorage.objects.upload(productionBucket, source, productionVersion + '/assets/app.min.css', function(error) {
+              if ( error ) grunt.log.error( error )
               step();
             });
           });
         } else {
           uploadFunctions.push(function(step) {
             grunt.log.success('uploading ' + source);
-            cloudStorage.objects.upload(productionBucket, source, productionVersion + '/assets/' + file, function() {
+            cloudStorage.objects.upload(productionBucket, source, productionVersion + '/assets/' + file, function(error) {
+              if ( error ) grunt.log.error( error )
               step();
             });
           });

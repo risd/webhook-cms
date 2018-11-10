@@ -1,3 +1,5 @@
+/*global firebase*/
+
 import Group from 'appkit/models/group';
 import User from 'appkit/models/user';
 
@@ -37,7 +39,7 @@ export default Ember.Route.extend({
       window.trackingInfo.siteDNS = window.ENV.siteDNS;
     }
 
-    window.ENV.firebaseRoot.child('/management/sites/' + siteName + '/dns').on('value', function (snap) {
+    window.ENV.firebaseRoot.ref('/management/sites/' + siteName + '/dns').on('value', function (snap) {
       if (snap.val()) {
         window.ENV.siteDNS = snap.val();
         window.trackingInfo.siteDNS = window.ENV.siteDNS;
@@ -172,7 +174,7 @@ export default Ember.Route.extend({
   },
 
   // Confirm that user has completed validation steps
-  validateUser: function (user) {
+  validateUser: function () {
 
     Ember.Logger.log('ApplicationRoute::validateUser');
 
@@ -181,15 +183,22 @@ export default Ember.Route.extend({
 
     window.trackingInfo.siteName = siteName;
 
-    var managementSiteRef = window.ENV.firebaseRoot.child('management/sites/' + siteName);
+    var managementSiteRef = window.ENV.firebaseRoot.ref('management/sites/' + siteName);
 
     return new Ember.RSVP.Promise(function (resolve, reject) {
+
+      var user = firebase.auth().currentUser;
 
       var getToken = function (snapshot) {
         var token = snapshot.val();
         session.set('site.token', token);
 
-        window.ENV.firebase = window.ENV.firebaseRoot.child('buckets/' + siteName + '/' + token + '/dev');
+        Ember.Logger.log('ApplicationRoute::get-token');
+
+        window.ENV.firebase = window.ENV.firebaseRoot.ref('buckets/' + siteName + '/' + token + '/dev');
+
+        Ember.Logger.log('window.ENV.firebase');
+        Ember.Logger.log(window.ENV.firebase);
 
         // if you just logged in, we have to set the firebase property
         DS.FirebaseAdapter.reopen({
@@ -197,40 +206,40 @@ export default Ember.Route.extend({
         });
 
         Ember.Logger.log('ApplicationRoute::validateUser::✓');
-
         resolve(user);
       };
 
-      managementSiteRef.child('key').once('value', getToken, function (error) {
-
-        if (error.code === 'PERMISSION_DENIED') {
-          var escapedEmail = user.email.toLowerCase().replace(/\./g, ',1');
-          // Try to add to user list, if this is allowed they were a potential user
-          managementSiteRef.child('users').child(escapedEmail).set(user.email.toLowerCase(), function (error) {
-            if (error) {
-              reject(error);
-              return;
-            }
-            managementSiteRef.root().child('management/users').child(escapedEmail).child('sites/user').child(siteName).set(true, function (error) {
+      managementSiteRef.child('key').once( 'value' )
+        .then( getToken )
+        .catch( function (error) {
+          if (error.code === 'PERMISSION_DENIED') {
+            console.log( '' )
+            var escapedEmail = user.email.toLowerCase().replace(/\./g, ',1');
+            // Try to add to user list, if this is allowed they were a potential user
+            managementSiteRef.child('users').child(escapedEmail).set(user.email.toLowerCase(), function (error) {
               if (error) {
                 reject(error);
                 return;
               }
-              // Try to delete self from potential user list
-              managementSiteRef.child('potential_users').child(escapedEmail).remove(function (error) {
+              managementSiteRef.root.child('management/users').child(escapedEmail).child('sites/user').child(siteName).set(true, function (error) {
                 if (error) {
                   reject(error);
                   return;
                 }
-                // Redo original authorization call
-                managementSiteRef.child('key').once('value', getToken, reject);
+                // Try to delete self from potential user list
+                managementSiteRef.child('potential_users').child(escapedEmail).remove(function (error) {
+                  if (error) {
+                    reject(error);
+                    return;
+                  }
+                  // Redo original authorization call
+                  managementSiteRef.child('key').once('value', getToken, reject);
+                });
               });
             });
-          });
-        } else {
-          reject(error);
-        }
-
+          } else {
+            reject(error);
+          }
       });
 
     });
@@ -240,24 +249,24 @@ export default Ember.Route.extend({
   initializeUser: function (user) {
 
     Ember.Logger.log('ApplicationRoute::initializeUser');
+    Ember.Logger.log(user);
 
     var route = this;
     var session = route.get('session');
     var siteName = session.get('site.name');
 
-    var managementSiteRef = window.ENV.firebaseRoot.child('management/sites/' + siteName);
+    var managementSiteRef = window.ENV.firebaseRoot.ref('management/sites/' + siteName);
 
     if (!route.get('buildEnvironment.local')) {
       this.setupMessageListener();
     }
-
-    user.email = user.email.toLowerCase();
 
     Ember.Logger.info('Logged in as ' + user.email);
 
     var escapedEmail = user.email.toLowerCase().replace(/\./g, ',1');
 
     var ownerCheck = new Ember.RSVP.Promise(function (resolve, reject) {
+      Ember.Logger.log('ApplicationRoute::initializeUser::ownerCheck');
       session.set('isOwner', false);
       managementSiteRef.once('value', function (snapshot) {
         var siteData = snapshot.val();
@@ -293,9 +302,10 @@ export default Ember.Route.extend({
     session.set('billing', billing);
 
     // Grab actual billing values
-    var billingRef = window.ENV.firebaseRoot.child('billing/sites/' + siteName);
+    var billingRef = window.ENV.firebaseRoot.ref('billing/sites/' + siteName);
 
     var activeCheck = new Ember.RSVP.Promise(function (resolve, reject) {
+      Ember.Logger.log('ApplicationRoute::initializeUser::activeCheck');
       billingRef.child('active').once('value', function (snapshot) {
         session.set('billing.active', snapshot.val());
         Ember.run(null, resolve);
@@ -303,6 +313,7 @@ export default Ember.Route.extend({
     });
 
     var statusCheck = new Ember.RSVP.Promise(function (resolve, reject) {
+      Ember.Logger.log('ApplicationRoute::initializeUser::statusCheck');
       billingRef.child('status').once('value', function (snapshot) {
         session.set('billing.status', snapshot.val());
         Ember.run(null, resolve);
@@ -310,6 +321,7 @@ export default Ember.Route.extend({
     });
 
     var endTrialCheck = new Ember.RSVP.Promise(function (resolve, reject) {
+      Ember.Logger.log('ApplicationRoute::initializeUser::endTrialCheck');
       billingRef.child('endTrial').once('value', function (snapshot) {
         var endTrial = snapshot.val();
         if (endTrial) {
@@ -324,7 +336,7 @@ export default Ember.Route.extend({
 
     return Ember.RSVP.Promise.all([ownerCheck, activeCheck, statusCheck, endTrialCheck]).then(function () {
       Ember.Logger.log('ApplicationRoute::initializeUser::✓');
-      session.set('user', user);
+      route.set('session.user', user);;
     });
 
   },
@@ -343,57 +355,103 @@ export default Ember.Route.extend({
 
     var siteName = session.get('site.name');
 
-    var managementSiteRef = window.ENV.firebaseRoot.child('management/sites/' + siteName);
+    var managementSiteRef = window.ENV.firebaseRoot.ref('management/sites/' + siteName);
 
     return new Ember.RSVP.Promise(function (resolve, reject) {
+      Ember.Logger.log('ApplicationRoute::getSession::promise');
 
-      var firebaseAuth = new FirebaseSimpleLogin(window.ENV.firebaseRoot, function (error, user) {
-
-        if (route.get('isDestroyed')) {
-          return;
-        }
-
-        if (user) {
-          if(window.Raygun) {
-            window.Raygun.setUser(user.email, false, user.email);
-            window.trackingInfo.user = user.email;
-          }
-          window.trackingInfo.loggedIn = true;
-          // Logged in
-          route.validateUser(user).then(route.initializeUser.bind(route), function (error) {
-            session.set('user', null);
-            session.set('site.token', null);
-            session.set('error', error);
-          }).then(route.getTeam.bind(route), function (error) {
-            session.set('user', null);
-            session.set('site.token', null);
-            session.set('error', error);
-          }).then(resolve, function (error) {
-            session.set('user', null);
-            session.set('site.token', null);
-            session.set('error', error);
-          });
-        } else if (error) {
-          // an error occurred while attempting login
-          session.set('user', null);
-          session.set('site.token', null);
-          session.set('error', {
-            code: "Invalid Login",
-            message: "The email and password you entered don't match."
-          });
-          reject(error);
-        } else {
-          window.trackingInfo.loggedIn = false;
-          // user is logged out
-          session.set('user', null);
-          session.set('site.token', null);
-          resolve();
-        }
-
-      });
-
+      var firebaseAuth = {
+        signInWithEmailAndPassword: firebaseEmailPasswordAuth,
+        currentUser: currentUser,
+        signOut: signOut,
+        reAuthWithPassword: reAuthWithPassword,
+        createUserWithEmailAndPassword: createUserWithEmailAndPassword,
+        sendPasswordResetEmail: sendPasswordResetEmail,
+      };
       session.set('auth', firebaseAuth);
 
+      // triggers as Firebase first initializes the auth state.
+      firebase.auth().onAuthStateChanged( initializedUser )
+
+      function initializedUser ( user ) {
+        firebase.auth().onAuthStateChanged( function noop () {} )
+        if ( user ) return successfullySignedIn( user )
+        else notSignedIn( user )
+      }
+
+      function successfullySignedIn ( user ) {
+        if ( bailIfDestroyed() ) return;
+        Ember.Logger.log('LoginController::signInWithEmailAndPassword::user');
+        if(window.Raygun) {
+          window.Raygun.setUser(user.email, false, user.email);
+          window.trackingInfo.user = user.email;
+        }
+        window.trackingInfo.loggedIn = true;
+        // Logged in
+        route.validateUser()
+          .then(route.initializeUser.bind(route), notSignedIn)
+          .then(route.getTeam.bind(route), notSignedIn)
+          .then(resolve, notSignedIn);
+      }
+
+      function notSignedIn ( error ) {
+        if ( bailIfDestroyed() ) return;
+        window.trackingInfo.loggedIn = false;
+        // user is logged out
+        session.set('user', null);
+        session.set('site.token', null);
+        if ( error && error.code && error.message ) {
+          session.set('error', error);
+          return reject( error );
+        }
+        else if ( error ) {
+          var errorDuringAuth = {
+            code: 'Authentication Error',
+            message: 'Could not authenticate user.',
+          };
+          session.set( 'error', errorDuringAuth );
+          return reject( errorDuringAuth );
+        }
+        else {
+          return resolve();
+        }
+      }
+
+      function bailIfDestroyed () {
+        if (route.get('isDestroyed')) {
+          Ember.Logger.log('ApplicationRoute::getSession::destroyed');
+          return true;
+        }
+      }
+
+      // Closure that handles firebase authe with email & password
+      function firebaseEmailPasswordAuth ( email, password ) {
+
+        if ( bailIfDestroyed() ) return;
+        var user = firebaseAuth.currentUser()
+        if ( user ) return successfullySignedIn( user );
+
+        firebase.auth().signInWithEmailAndPassword( email, password )
+          .then( successfullySignedIn )
+          .catch( notSignedIn );
+      }
+
+      function currentUser () { return firebase.auth().currentUser }
+      function signOut () { return firebase.auth().signOut() }
+      function createUserWithEmailAndPassword ( email, password ) {
+        return firebase.auth().createUserWithEmailAndPassword( email, password )
+      }
+
+      function reAuthWithPassword ( password ) {
+        var email = firebaseAuth.currentUser().email;
+        return firebase.auth().signInWithEmailAndPassword( email, password )
+      }
+
+      function sendPasswordResetEmail ( email ) {
+        var redirectTo = encodeURIComponent( [ 'https://', siteName.replace( /,1/g, '.' ), '/cms' ].join('') )
+        var continuationUrl = [ 'https://redirect.risd.systems/index.html?to=', redirectTo ].join( '' )
+        return firebase.auth().sendPasswordResetEmail( email, { url: continuationUrl } );
+      }
     });
   },
 
@@ -403,7 +461,7 @@ export default Ember.Route.extend({
     Ember.Logger.log('ApplicationRoute::getTeam');
 
     var siteName = this.get('session.site.name');
-    var siteManagementRef = window.ENV.firebaseRoot.child('management/sites').child(siteName);
+    var siteManagementRef = window.ENV.firebaseRoot.ref('management/sites').child(siteName);
 
     var route = this;
 
@@ -424,15 +482,15 @@ export default Ember.Route.extend({
       siteManagementRef.child('owners').once('value', function (snapshot) {
 
         snapshot.forEach(function (snapshot) {
-          addToUsers({ key: snapshot.key(), email: snapshot.val() }, 'owner');
+          addToUsers({ key: snapshot.key, email: snapshot.val() }, 'owner');
         });
 
-        snapshot.ref().on('child_added', function (snapshot) {
-          addToUsers({ key: snapshot.key(), email: snapshot.val() }, 'owner');
+        snapshot.ref.on('child_added', function (snapshot) {
+          addToUsers({ key: snapshot.key, email: snapshot.val() }, 'owner');
         });
 
-        snapshot.ref().on('child_removed', function (snapshot) {
-          users.findBy('key', snapshot.key()).set('owner', false);
+        snapshot.ref.on('child_removed', function (snapshot) {
+          users.findBy('key', snapshot.key).set('owner', false);
         });
 
         resolve();
@@ -446,15 +504,15 @@ export default Ember.Route.extend({
       siteManagementRef.child('users').once('value', function (snapshot) {
 
         snapshot.forEach(function (snapshot) {
-          addToUsers({ key: snapshot.key(), email: snapshot.val() }, 'user');
+          addToUsers({ key: snapshot.key, email: snapshot.val() }, 'user');
         });
 
-        snapshot.ref().on('child_added', function (snapshot) {
-          addToUsers({ key: snapshot.key(), email: snapshot.val() }, 'user');
+        snapshot.ref.on('child_added', function (snapshot) {
+          addToUsers({ key: snapshot.key, email: snapshot.val() }, 'user');
         });
 
-        snapshot.ref().on('child_removed', function (snapshot) {
-          users.findBy('key', snapshot.key()).set('user', false);
+        snapshot.ref.on('child_removed', function (snapshot) {
+          users.findBy('key', snapshot.key).set('user', false);
         });
 
         resolve();
@@ -468,15 +526,15 @@ export default Ember.Route.extend({
       siteManagementRef.child('potential_users').once('value', function (snapshot) {
 
         snapshot.forEach(function (snapshot) {
-          addToUsers({ key: snapshot.key(), email: snapshot.val() }, 'potential');
+          addToUsers({ key: snapshot.key, email: snapshot.val() }, 'potential');
         });
 
-        snapshot.ref().on('child_added', function (snapshot) {
-          addToUsers({ key: snapshot.key(), email: snapshot.val() }, 'potential');
+        snapshot.ref.on('child_added', function (snapshot) {
+          addToUsers({ key: snapshot.key, email: snapshot.val() }, 'potential');
         });
 
-        snapshot.ref().on('child_removed', function (snapshot) {
-          users.findBy('key', snapshot.key()).set('potential', false);
+        snapshot.ref.on('child_removed', function (snapshot) {
+          users.findBy('key', snapshot.key).set('potential', false);
         });
 
         resolve();
@@ -490,7 +548,7 @@ export default Ember.Route.extend({
 
     var addGroup = function (groupSnapshot) {
 
-      if (groups.findBy('key', groupSnapshot.key())) {
+      if (groups.findBy('key', groupSnapshot.key)) {
         return;
       }
 
@@ -498,7 +556,7 @@ export default Ember.Route.extend({
 
       var group = Group.create({
         name: groupData.name,
-        key: groupSnapshot.key(),
+        key: groupSnapshot.key,
         permissions: Ember.Object.create({})
       });
 
@@ -510,14 +568,14 @@ export default Ember.Route.extend({
 
       groups.addObject(group);
 
-      var groupPermissionsRef = groupSnapshot.ref().child('permissions');
+      var groupPermissionsRef = groupSnapshot.ref.child('permissions');
 
       groupPermissionsRef.on('child_changed', function (snapshot) {
-        group.get('permissions').set(snapshot.key(), snapshot.val());
+        group.get('permissions').set(snapshot.key, snapshot.val());
       });
 
       groupPermissionsRef.on('child_added', function (snapshot) {
-        var contentTypeId = snapshot.key();
+        var contentTypeId = snapshot.key;
         var permission = snapshot.val();
         if (group.get('permissions').get(contentTypeId) !== permission) {
           group.get('permissions').set(contentTypeId, permission);
@@ -525,12 +583,12 @@ export default Ember.Route.extend({
       });
 
       groupPermissionsRef.on('child_removed', function (snapshot) {
-        group.get('permissions').set(snapshot.key(), null);
+        group.get('permissions').set(snapshot.key, null);
       });
 
       // watch for user changes
 
-      var groupUsersRef = groupSnapshot.ref().child('users');
+      var groupUsersRef = groupSnapshot.ref.child('users');
 
       Ember.keys(groupData.users || {}).forEach(function (escapedEmail) {
         var user = users.findBy('key', escapedEmail);
@@ -543,7 +601,7 @@ export default Ember.Route.extend({
       });
 
       groupUsersRef.on('child_added', function (snapshot) {
-        var escapedEmail = snapshot.key();
+        var escapedEmail = snapshot.key;
 
         if (group.get('users').findBy('key', escapedEmail)) {
           return;
@@ -560,7 +618,7 @@ export default Ember.Route.extend({
       });
 
       groupUsersRef.on('child_removed', function (snapshot) {
-        var escapedEmail = snapshot.key();
+        var escapedEmail = snapshot.key;
 
         if (!group.get('users').findBy('key', escapedEmail)) {
           return;
@@ -584,9 +642,9 @@ export default Ember.Route.extend({
 
         snapshot.forEach(addGroup);
 
-        snapshot.ref().on('child_added', addGroup);
-        snapshot.ref().on('child_removed', function (snapshot) {
-          var groupKey = snapshot.key();
+        snapshot.ref.on('child_added', addGroup);
+        snapshot.ref.on('child_removed', function (snapshot) {
+          var groupKey = snapshot.key;
           var group = groups.findBy('key', groupKey);
           groups.removeObject(group);
         });
@@ -648,7 +706,7 @@ export default Ember.Route.extend({
     var siteName = this.get('session.site.name');
     var buildEnv = this.get('buildEnvironment');
 
-    var ref = window.ENV.firebase.root().child('management/sites/' + siteName + '/messages');
+    var ref = window.ENV.firebase.root.child('management/sites/' + siteName + '/messages');
     if (listener) {
       ref.off('child_added', listener);
       listener = null;
@@ -665,7 +723,7 @@ export default Ember.Route.extend({
       listener = ref.on('child_added', function(snap) {
         var now = Date.now();
         var message = snap.val();
-        var id = snap.key();
+        var id = snap.key;
 
         if(!initialIds[id]) {
           if(message.code === 'BUILT') {
@@ -696,7 +754,7 @@ export default Ember.Route.extend({
 
       window.ENV.firebase.child('presence/online').child(this.get('session.user.uid')).remove();
 
-      this.get('session.auth').logout();
+      this.get('session.auth').signOut();
       this.set('session.user', null);
       this.transitionTo('login');
     },
@@ -756,7 +814,7 @@ export default Ember.Route.extend({
 
       var logEntry = Object.assign( { timestamp: timestamp }, options );
 
-      var logRef = window.ENV.firebase.root().child( '/management/sites' ).child( siteName ).child( 'messages' );
+      var logRef = window.ENV.firebase.root.child( '/management/sites' ).child( siteName ).child( 'messages' );
 
       // push log entry
       logRef.push( logEntry, function onComplete () {
@@ -775,7 +833,7 @@ export default Ember.Route.extend({
 
           if ( logLength > maxLength ) {
             logRef.limitToFirst( 1 ).once( 'child_added', function ( snap ) {
-              snap.ref().remove();
+              snap.ref.remove();
             } );
           }
         } );
@@ -784,7 +842,6 @@ export default Ember.Route.extend({
 
     buildSignal: function (publishDate, options) {
       if ( !options ) options = {};
-      console.log( 'build-signal-options:' + JSON.stringify( options ) )
 
       Ember.Logger.info('Sending build signal:%@'.fmt(publishDate || 'No publish date.'));
 
@@ -807,8 +864,8 @@ export default Ember.Route.extend({
         if (options.contentType) data.contentType = options.contentType;
         if (options.itemKey) data.itemKey = options.itemKey;
 
-        window.ENV.firebase.root().child('management/commands/previewBuild/' + route.get('session.site.name')).set(data);
-        window.ENV.firebase.root().child('management/commands/build/' + route.get('session.site.name')).set(data);
+        window.ENV.firebase.root.child('management/commands/previewBuild/' + route.get('session.site.name')).set(data);
+        window.ENV.firebase.root.child('management/commands/build/' + route.get('session.site.name')).set(data);
         route.set('buildEnvironment.building', true);
 
       } else {

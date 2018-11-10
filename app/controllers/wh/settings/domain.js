@@ -11,7 +11,7 @@ export default Ember.ObjectController.extend({
   init: function() {
     var siteName = this.get('session.site.name');
 
-    window.ENV.firebaseRoot.child("management/sites/" + siteName + "/dns-status/status").on('value', function(snap) {
+    window.ENV.firebaseRoot.ref("management/sites/" + siteName + "/dns-status/status").on('value', function(snap) {
       var val = snap.val();
 
       if(val) {
@@ -129,7 +129,7 @@ export default Ember.ObjectController.extend({
         }); 
       }
 
-      window.ENV.firebaseRoot.child("management/sites/" + siteName + "/dns").set(domain, function() {
+      window.ENV.firebaseRoot.ref("management/sites/" + siteName + "/dns").set(domain, function() {
         var id = uniqueId();
         var commandData = {
           dnsname: domain,
@@ -140,9 +140,9 @@ export default Ember.ObjectController.extend({
         // Set the ID here in the dns-status
         // Also set dns-status/status to in progress
 
-        window.ENV.firebaseRoot.child("management/sites/" + siteName + "/dns-status/id").set(id, function() {
-          window.ENV.firebaseRoot.child("management/sites/" + siteName + "/dns-status/status").set({ type: 'verifying' }, function() {
-            window.ENV.firebaseRoot.child("management/commands/dns/" + siteName).set(commandData, function() {
+        window.ENV.firebaseRoot.ref("management/sites/" + siteName + "/dns-status/id").set(id, function() {
+          window.ENV.firebaseRoot.ref("management/sites/" + siteName + "/dns-status/status").set({ type: 'verifying' }, function() {
+            window.ENV.firebaseRoot.ref("management/commands/dns/" + siteName).set(commandData, function() {
              // this.set('success', true);
               this.set('isSending', false);
             }.bind(this));

@@ -12,10 +12,10 @@ export default Ember.Route.extend({
 
       return new Ember.RSVP.Promise(function (resolve, reject) {
 
-        window.ENV.firebaseRoot.child('management/sites/' + siteName + '/messages').limitToLast(10).once('value', function (snapshot) {
+        window.ENV.firebaseRoot.ref('management/sites/' + siteName + '/messages').limitToLast(10).once('value', function (snapshot) {
 
           snapshot.forEach(function (childSnapshot) {
-            var message = Ember.$.extend({}, childSnapshot.val(), { id: childSnapshot.key() });
+            var message = Ember.$.extend({}, childSnapshot.val(), { id: childSnapshot.key });
             if (typeof message.status !== 'undefined' && message.status === 0) {
               route.set('session.isDeployed', true);
             }

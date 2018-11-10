@@ -54,7 +54,7 @@ module.exports = {
       src: ['**'],
       dest: 'tmp/result/'
     }, {
-      src: ['vendor/**/*.js', 'vendor/**/*.css'],
+      src: ['vendor/**/*.js', 'vendor/**/*.css', 'node_modules/{firebase,emberfire}/**/*.js'],
       dest: 'tmp/result/'
     }, {
       src: ['config/environment.js', 'config/environments/production.js'],

@@ -114,7 +114,7 @@ export default Ember.ArrayController.extend({
           var id = uniqueId();
 
 
-          window.ENV.firebaseRoot.child("management/commands/redirects/" + controller.get('session.site.name')).set({
+          window.ENV.firebaseRoot.ref("management/commands/redirects/" + controller.get('session.site.name')).set({
             userid: controller.get('session.user.email'),
             sitename: controller.get('session.site.name'),
             id: id,

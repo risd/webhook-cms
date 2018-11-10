@@ -22,7 +22,7 @@ export default Ember.ArrayController.extend({
     userRef.onDisconnect().remove();
 
     // when I disconnect, update the last time I was seen online
-    lastOnlineRef.onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+    lastOnlineRef.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
 
     this.addObserver('session.user', function () {
       if (this.get('session.user')) {
