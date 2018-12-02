@@ -411,12 +411,13 @@ export default Ember.Route.extend({
       function notSignedIn ( error ) {
         if ( bailIfDestroyed() ) return;
         window.trackingInfo.loggedIn = false;
+        
         // logged in as different user than has access to site
         // (happens in localhost situations)
         var user = firebaseAuth.currentUser()
         if ( user ) firebaseAuth.signOut()
+
         // user is logged out
-        
         session.set('user', null);
         session.set('site.token', null);
         if ( error && error.code && error.message ) {
