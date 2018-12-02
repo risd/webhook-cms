@@ -2,17 +2,19 @@
 
 This repository is for the Webhook CMS layer. There are several other repositories in Webhook's core.
 
-* [webhook](https://github.com/webhook/webhook) - The Webhook command line tools.
-* [webhook-generate](https://github.com/webhook/webhook-generate) - The local runserver for Webhook.
-* [webhook-cms](https://github.com/webhook/webhook-cms) - The CMS layer and frotend GUI. A single page Ember app.
-* [webhook-server-open](https://github.com/webhook/webhook-server-open) - The production server for serving and regenerating live Webhook sites.
-* [webhook-images](https://github.com/webhook/webhook-images) - Image resizing for the Webhook frontend. For Google App Engine.
+* [@risd/wh](https://github.com/risd/webhook) - The Webhook command line tools.
+* [@risd/webhook-generate](https://github.com/risd/webhook-generate) - The local runserver for Webhook.
+* [@risd/webhook-cms](https://github.com/risd/webhook-cms) - The CMS layer and frotend GUI. A single page Ember app.
+* [@risd/webhook-server-open](https://github.com/risd/webhook-server-open) - The production server for serving and regenerating live Webhook sites.
+* [webhook-images](https://github.com/risd/webhook-images) - Image resizing for the Webhook frontend. For Google App Engine.
 
-If you are interested in self-hosting Webhook, [check the instructions here](http://www.webhook.com/docs/self-host-webhook/).
+These @risd forks of the project are currently maintained for the purposes of the Rhose Island School of Design. These forks have been developed with the intention of extending the orignal [webhook](http://www.webhook.com) platform to accomodate the team's needs. The work has been done in an open-source friendly way, keeping the details of any specific platform to the job of configuration, making it possible for others to piggy back on the work, given that they publish their own self-hosted instance.
+
+If you are interested in self-hosting, [check the instructions here](http://www.webhook.com/docs/self-host-webhook/), per the original Webhook project.
 
 ## Webhook CMS
 
-The Webhook CMS is the CMS layer of Webhook.com. Essentially it is a one-page Ember app based upon [Ember App Kit][1]. It uses an ES6 Module Transpiler which allows for [ES6 module syntax][2]. The code for the Ember app is in the `app` directory.
+The Webhook CMS is the CMS layer of platform. Essentially it is a one-page Ember app based upon [Ember App Kit][1]. It uses an ES6 Module Transpiler which allows for [ES6 module syntax][2]. The code for the Ember app is in the `app` directory.
 
 **The CMS provides two primary functions.**
 
@@ -21,7 +23,7 @@ The Webhook CMS is the CMS layer of Webhook.com. Essentially it is a one-page Em
 
 ## How to install for local development
 
-**Important:** *You need a working Webhook site account to develop on the CMS.*
+**Important:** *You need a working account on a webhook platform to develop on the CMS.*
 
 Steps to install:
 
