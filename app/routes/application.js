@@ -369,12 +369,27 @@ export default Ember.Route.extend({
       };
       session.set('auth', firebaseAuth);
 
+      firebase.authMigrator().migrate().catch( migrateAuthError );
+
       // triggers as Firebase first initializes the auth state.
       firebase.auth().onAuthStateChanged( initializedUser )
 
+      function clearLegacyAuth ( user ) {
+        if ( user ) {
+          firebase.authMigrator().clearLegacyAuth();
+        }
+      }
+
+      function migrateAuthError ( error ) {
+        console.log( error )
+      }
+
       function initializedUser ( user ) {
         firebase.auth().onAuthStateChanged( function noop () {} )
-        if ( user ) return successfullySignedIn( user )
+        if ( user ) {
+          clearLegacyAuth( user )
+          return successfullySignedIn( user )
+        }
         else notSignedIn( user )
       }
 

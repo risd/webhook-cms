@@ -298,7 +298,11 @@ export default Ember.ObjectController.extend(Ember.Evented, {
 
             var itemData = item.get('itemData');
 
-            itemData[controlToRemove.get('name')] = null;
+            try {
+              itemData[controlToRemove.get('name')] = null;
+            } catch ( error ) {
+              Ember.Logger.log('- Relation data not found in `%@`'.fmt(item.get('id')));
+            }
 
             item.set('itemData', itemData);
 
