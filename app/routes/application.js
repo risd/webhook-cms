@@ -335,7 +335,7 @@ export default Ember.Route.extend({
 
     return Ember.RSVP.Promise.all([ownerCheck, activeCheck, statusCheck, endTrialCheck]).then(function () {
       Ember.Logger.log('ApplicationRoute::initializeUser::✓');
-      route.set('session.user', user);
+      route.set('session.user', { email: user.email, uid: user.uid });
     });
 
   },
