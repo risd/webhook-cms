@@ -3,7 +3,7 @@
   "namespace": "appkit",
   "APIMethod": "stub",
   "proxyURL": "http://localhost:8000",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "directories": {
     "doc": "doc",
     "test": "test"
