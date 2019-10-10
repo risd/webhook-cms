@@ -71,7 +71,7 @@ export default Ember.Component.extend({
     if (this.get('options.javascript') === false) {
       redactorOptions.deniedTags = ['script'];
       redactorOptions.allowedAttr =  [
-        ['a', ['href']],
+        ['a', ['href', 'target']],
         ['p', 'class'],
         ['img', ['src', 'alt']],
         ['figure', ['data-type', 'class']]
